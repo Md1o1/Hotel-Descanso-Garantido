@@ -1,5 +1,6 @@
 # Hotel-Descanso-Garantido
 \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
 Descanso Garantido é um hotel que tem como objetivo atender bem seus clientes e fidelizá-los.
 Está localizado no centro de Itacaré – BA e possui alguns funcionários com os seguintes cargos:
 recepcionista, auxiliar de limpeza, garçom, gerente. Acontece que até hoje o Hotel Descanso
