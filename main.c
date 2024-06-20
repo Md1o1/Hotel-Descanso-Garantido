@@ -1,4 +1,7 @@
-#include "main.h"
+/* objetivo: Sistema de gerenciamento de um hotel
+ * autores: Julia Oliveira, Santhiago Takaesu, Kelvin Mendes.
+ * versão: 1.0
+*/ 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,75 +18,82 @@ FILE *dados_funcionarios;
 FILE *dados_estadias;
 FILE *dados_quartos;
 
-int main() {
-    char opcao;
+/*#ifndef MAIN_H_INCLUDED
+#define MAIN_H_INCLUDED */
+typedef struct tm DataTempo;
 
-    setlocale(LC_ALL, "UTF-8");
+typedef struct {
+    int dia;
+    int mes;
+    int ano;
+} Data;
 
-    dados_clientes = fopen("dados_clientes.dat", "rb+");
-    if (dados_clientes == NULL) dados_clientes = fopen("dados_clientes.dat", "wb+");
+typedef struct {
+    int codigo;
+    char nome[50];
+    char endereco[50];
+    char telefone[13];
+} Cliente;
 
-    dados_funcionarios = fopen("dados_funcionarios.dat", "rb+");
-    if (dados_funcionarios == NULL) dados_funcionarios = fopen("dados_funcionarios.dat", "wb+");
+typedef struct {
+    int codigo;
+    char nome[50];
+    char telefone[13];
+    char cargo[50];
+    float salario;
+} Funcionario;
 
-    dados_estadias = fopen("dados_estadias.dat", "rb+");
-    if (dados_estadias == NULL) dados_estadias = fopen("dados_estadias.dat", "wb+");
+typedef struct {
+    int codigo;
+    DataTempo data_entrada;
+    DataTempo data_saida;
+    int quantidade_diarias;
+    int codigo_cliente;
+    int numero_quarto;
+    bool com_baixa; // Usado para verificar se a estadia já teve baixa.
+} Estadia;
 
-    dados_quartos = fopen("dados_quartos.dat", "rb+");
-    if (dados_quartos == NULL) dados_quartos = fopen("dados_quartos.dat", "wb+");
+typedef struct {
+    int numero;
+    int quantidade_hospedes;
+    float valor_diaria;
+    /* bool status;
+     * O status está de acordo com o período solicitado de estadia,
+     * portanto não justifica ter uma propriedade na estrutura dos quartos,
+     * visto que esses parâmetros estão sendo usados para validar o status
+     * dos quartos.
+     * */
+} Quarto;
 
-    do {
-        system("cls");
-        menu();
+typedef struct {
+    Quarto *vetor;
+    int tamanho;
+} VetorQuartos;
 
-        printf("\nSelecione a opção\n");
-        opcao = getch();
-        fflush(stdin);
-
-        system("cls");
-
-        switch (opcao - '0') {
-            case 0:
-                fclose(dados_clientes);
-                fclose(dados_funcionarios);
-                fclose(dados_estadias);
-                fclose(dados_quartos);
-                break;
-            case 1:
-                cadastrar_cliente();
-                break;
-            case 2:
-                cadastrar_funcionario();
-                break;
-            case 3:
-                cadastrar_quarto();
-                break;
-            case 4:
-                cadastrar_estadia();
-                break;
-            case 5:
-                baixa_estadia();
-                break;
-            case 6:
-                pesquisar_cliente();
-                break;
-            case 7:
-                pesquisar_funcionario();
-                break;
-            case 8:
-                listar_estadias_cliente();
-                break;
-            case 9:
-                pontos_fidelidade_cliente();
-                break;
-
-        }
-
-        getch();
-    } while (opcao != '0');
-
-    return 0;
-}
+void aviso(char *);
+void menu();
+void cadastrar_cliente();
+void cadastrar_funcionario();
+void cadastrar_quarto();
+void cadastrar_estadia();
+void baixa_estadia();
+void pesquisar_cliente();
+void pesquisar_funcionario();
+void listar_estadias_cliente();
+void pontos_fidelidade_cliente();
+bool verificar_formato_data(Data);
+DataTempo buscar_data(Data, int);
+bool verificar_cliente_existente(char *);
+Cliente buscar_cliente_pelo_nome(char *);
+bool verificar_funcionario_existente(char *);
+Funcionario buscar_funcionario_pelo_nome(char *);
+bool verificar_quarto_existente(int);
+Quarto buscar_quarto_pelo_numero(int);
+VetorQuartos buscar_quartos_disponiveis(int, DataTempo, DataTempo);
+bool verificar_quarto_vetor(VetorQuartos, int);
+Quarto pesquisar_quarto_vetor(VetorQuartos, int);
+void remover_quarto_vetor(VetorQuartos *, int);
+/* #endif // MAIN_H_INCLUDED*/
 
 void aviso(char *mensagem) {
     printf("\n%s\n", mensagem);
@@ -92,12 +102,12 @@ void aviso(char *mensagem) {
 void menu() {
     printf("0 - Sair\n");
     printf("1 - Cadastrar cliente\n");
-    printf("2 - Cadastrar funcionário\n");
+    printf("2 - Cadastrar funcionario\n");
     printf("3 - Cadastrar quarto\n");
     printf("4 - Cadastrar estadia\n");
     printf("5 - Dar baixa na estadia\n");
     printf("6 - Pesquisar cliente\n");
-    printf("7 - Pesquisar funcionário\n");
+    printf("7 - Pesquisar funcionario\n");
     printf("8 - Listar estadias de um cliente\n");
     printf("9 - Exibir pontos de fidelidade um cliente\n");
 }
@@ -110,9 +120,9 @@ void cadastrar_cliente() {
     printf("Nome: ");
     gets(cliente.nome);
     if (verificar_cliente_existente(cliente.nome))
-        return aviso("Já existe um cliente com esse nome.");
+        return aviso("Ja existe um cliente com esse nome.");
 
-    printf("Endereço: ");
+    printf("Endereco: ");
     gets(cliente.endereco);
 
     printf("Telefone: ");
@@ -126,12 +136,12 @@ void cadastrar_cliente() {
 
 void cadastrar_funcionario() {
     Funcionario funcionario;
-    printf("Cadastro de funcionário\n\n");
+    printf("Cadastro de funcionario\n\n");
 
     printf("Nome: ");
     gets(funcionario.nome);
     if (verificar_funcionario_existente(funcionario.nome))
-        return aviso("Já existe um funcionário com esse nome.");
+        return aviso("Ja existe um funcionario com esse nome.");
 
     printf("Telefone: ");
     gets(funcionario.telefone);
@@ -139,7 +149,7 @@ void cadastrar_funcionario() {
     printf("\nSelecione um cargo\n");
     printf("  1 - Recepcionista\n");
     printf("  2 - Auxiliar de limpeza\n");
-    printf("  3 - Garçom\n");
+    printf("  3 - Garcom\n");
     printf("  4 - Gerente\n");
     switch (getch() - '0') {
         case 1:
@@ -149,17 +159,17 @@ void cadastrar_funcionario() {
             strcpy(funcionario.cargo, "Auxiliar de limpeza");
             break;
         case 3:
-            strcpy(funcionario.cargo, "Garçom");
+            strcpy(funcionario.cargo, "Garcom");
             break;
         case 4:
             strcpy(funcionario.cargo, "Gerente");
             break;
         default:
-            return aviso("Opção de cargo inválida.");
+            return aviso("Opcao de cargo invalida.");
     }
     printf("Cargo: %s\n\n", funcionario.cargo);
 
-    printf("Salário: ");
+    printf("Salario: ");
     scanf("%f", &funcionario.salario);
 
     fseek(dados_funcionarios, 0, SEEK_END);
@@ -175,12 +185,12 @@ void cadastrar_quarto() {
     printf("Numero do quarto: ");
     scanf("%d", &quarto.numero);
     if (verificar_quarto_existente(quarto.numero))
-        return aviso("Já existe um quarto com esse número.");
+        return aviso("Ja existe um quarto com esse numero.");
 
-    printf("Quantidade de hóspedes: ");
+    printf("Quantidade de hospedes: ");
     scanf("%d", &quarto.quantidade_hospedes);
 
-    printf("Valor diária: ");
+    printf("Valor diaria: ");
     scanf("%f", &quarto.valor_diaria);
 
     fflush(stdin);
@@ -204,31 +214,31 @@ void cadastrar_estadia() {
     printf("Nome do cliente: ");
     gets(nome_cliente);
     if (!verificar_cliente_existente(nome_cliente))
-        return aviso("Não foi encontrado um cliente com esse nome.");
+        return aviso("Nao foi encontrado um cliente com esse nome.");
     cliente = buscar_cliente_pelo_nome(nome_cliente);
     estadia.codigo_cliente = cliente.codigo;
 
     printf("Data de entrada (dd/mm/aaaa): ");
     scanf("%d/%d/%d", &data.dia, &data.mes, &data.ano);
     if (!verificar_formato_data(data))
-        return aviso("Data inválida.");
+        return aviso("Data invalida.");
     estadia.data_entrada = buscar_data(data, 14);
 
     printf("Data de saida (dd/mm/aaaa): ");
     scanf("%d/%d/%d", &data.dia, &data.mes, &data.ano);
     if (!verificar_formato_data(data))
-        return aviso("Data inválida.");
+        return aviso("Data invalida.");
     estadia.data_saida = buscar_data(data, 12);
     if (difftime(mktime(&estadia.data_saida), mktime(&estadia.data_entrada)) / HORAS < 22)
-        return aviso("A data de saída deve ser no mínimo um dia após a data de entrada.");
+        return aviso("A data de saida deve ser no minimo um dia apos a data de entrada.");
 
-    printf("Quantidade de hóspedes: ");
+    printf("Quantidade de hospedes: ");
     scanf("%d", &quantidade_hospedes);
 
     quartos_disponiveis = buscar_quartos_disponiveis(quantidade_hospedes, estadia.data_entrada, estadia.data_saida);
-    printf("Quartos disponíveis:\t");
+    printf("Quartos disponiveis:\t");
     if (quartos_disponiveis.tamanho == 0)
-        return aviso("Não existe quartos disponíveis.");
+        return aviso("Nao existe quartos disponiveis.");
 
     for (i = 0; i < quartos_disponiveis.tamanho; ++i) {
         printf("%d\t", quartos_disponiveis.vetor[i].numero);
@@ -236,10 +246,10 @@ void cadastrar_estadia() {
     }
     printf("\n");
 
-    printf("Número do quarto: ");
+    printf("Numero do quarto: ");
     scanf("%d", &estadia.numero_quarto);
     if (!verificar_quarto_vetor(quartos_disponiveis, estadia.numero_quarto))
-        return aviso("Não foi encontrado um quarto desocupado com esse número.");
+        return aviso("Nao foi encontrado um quarto desocupado com esse numero.");
 
     estadia.quantidade_diarias = (difftime(mktime(&estadia.data_saida), mktime(&estadia.data_entrada))
                                   + (estadia.data_entrada.tm_hour - estadia.data_saida.tm_hour) * HORAS) / DIAS;
@@ -258,7 +268,7 @@ void baixa_estadia() {
 
     printf("Baixa de estadia\n\n");
 
-    printf("Código da estadia: ");
+    printf("Codigo da estadia: ");
     scanf("%d", &codigo);
 
     fseek(dados_estadias, 0, SEEK_SET);
@@ -267,7 +277,7 @@ void baixa_estadia() {
     while (!feof(dados_estadias)) {
         if (estadia.codigo == codigo) {
             if (estadia.com_baixa)
-                return aviso("Esta estadia já teve baixa.");
+                return aviso("Esta estadia ja teve baixa.");
             if (!estadia.com_baixa) {
                 estadia.com_baixa = true;
                 fseek(dados_estadias, sizeof(Estadia) * (estadia.codigo - 1), SEEK_SET);
@@ -279,7 +289,7 @@ void baixa_estadia() {
         fread(&estadia, sizeof(Estadia), 1, dados_estadias);
     }
 
-    return aviso("Estadia com esse código não foi encontrada.");
+    return aviso("Estadia com esse codigo nao foi encontrada.");
 }
 
 void pesquisar_cliente() {
@@ -292,14 +302,14 @@ void pesquisar_cliente() {
     gets(nome);
 
     if (!verificar_cliente_existente(nome))
-        printf("\nNão foi encontrado um cliente com esse nome.\n");
+        printf("\nNao foi encontrado um cliente com esse nome.\n");
     else {
         cliente = buscar_cliente_pelo_nome(nome);
 
         printf("\nNome: %s\n", cliente.nome);
         printf("Telefone: %s\n", cliente.telefone);
         printf("Endereço: %s\n", cliente.endereco);
-        printf("Código: %d\n", cliente.codigo);
+        printf("Codigo: %d\n", cliente.codigo);
     }
 }
 
@@ -307,21 +317,21 @@ void pesquisar_funcionario() {
     Funcionario funcionario;
     char nome[50];
 
-    printf("Pesquisa de funcionário\n\n");
+    printf("Pesquisa de funcionario\n\n");
 
     printf("Nome: ");
     gets(nome);
 
     if (!verificar_funcionario_existente(nome))
-        printf("\nNão foi encontrado um funcionário com esse nome.\n");
+        printf("\nNao foi encontrado um funcionario com esse nome.\n");
     else {
         funcionario = buscar_funcionario_pelo_nome(nome);
 
         printf("\nNome: %s\n", funcionario.nome);
         printf("Telefone: %s\n", funcionario.telefone);
         printf("Cargo: %s\n", funcionario.cargo);
-        printf("Salário: R$%.2f\n", funcionario.salario);
-        printf("Código: %d\n", funcionario.codigo);
+        printf("Salario: R$%.2f\n", funcionario.salario);
+        printf("Codigo: %d\n", funcionario.codigo);
     }
 }
 
@@ -338,9 +348,9 @@ void listar_estadias_cliente() {
     gets(nome);
 
     if (!verificar_cliente_existente(nome))
-        return aviso("Não foi encontrado um cliente com esse nome.");
+        return aviso("Nao foi encontrado um cliente com esse nome.");
     cliente = buscar_cliente_pelo_nome(nome);
-    printf("Código do cliente: %d\n", cliente.codigo);
+    printf("Codigo do cliente: %d\n", cliente.codigo);
 
     fseek(dados_estadias, 0, SEEK_SET);
     fread(&estadia, sizeof(Estadia), 1, dados_estadias);
@@ -572,4 +582,74 @@ void remover_quarto_vetor(VetorQuartos *vetorQuartos, int numero) {
         --vetorQuartos->tamanho;
         realloc(vetorQuartos->vetor, vetorQuartos->tamanho * sizeof(Quarto));
     }
+}
+
+int main() {
+    char opcao;
+
+    setlocale(LC_ALL, "pt");
+
+    dados_clientes = fopen("dados_clientes.txt", "rb+");
+    if (dados_clientes == NULL) dados_clientes = fopen("dados_clientes.txt", "wb+");
+
+    dados_funcionarios = fopen("dados_funcionarios.txt", "rb+");
+    if (dados_funcionarios == NULL) dados_funcionarios = fopen("dados_funcionarios.txt", "wb+");
+
+    dados_estadias = fopen("dados_estadias.txt", "rb+");
+    if (dados_estadias == NULL) dados_estadias = fopen("dados_estadias.txt", "wb+");
+
+    dados_quartos = fopen("dados_quartos.txt", "rb+");
+    if (dados_quartos == NULL) dados_quartos = fopen("dados_quartos.txt", "wb+");
+
+    do {
+        system("cls");
+        menu();
+
+        printf("\nSelecione a opcaoçççééááã\n");
+        opcao = getch();
+        fflush(stdin);
+
+        system("cls");
+
+        switch (opcao - '0') {
+            case 0:
+                fclose(dados_clientes);
+                fclose(dados_funcionarios);
+                fclose(dados_estadias);
+                fclose(dados_quartos);
+                break;
+            case 1:
+                cadastrar_cliente();
+                break;
+            case 2:
+                cadastrar_funcionario();
+                break;
+            case 3:
+                cadastrar_quarto();
+                break;
+            case 4:
+                cadastrar_estadia();
+                break;
+            case 5:
+                baixa_estadia();
+                break;
+            case 6:
+                pesquisar_cliente();
+                break;
+            case 7:
+                pesquisar_funcionario();
+                break;
+            case 8:
+                listar_estadias_cliente();
+                break;
+            case 9:
+                pontos_fidelidade_cliente();
+                break;
+
+        }
+
+        getch();
+    } while (opcao != '0');
+
+    return 0;
 }
