@@ -31,13 +31,13 @@ typedef struct{
     int codigo;
     char nome[50];
     char endereco[50];
-    char telefone[13];
+    char telefone[11];
 } Cliente;
 
 typedef struct{
     int codigo;
     char nome[50];
-    char telefone[13];
+    char telefone[11];
     char cargo[50];
     float salario;
 } Funcionario;
@@ -88,6 +88,8 @@ VetorQuartos buscar_quartos_disponiveis(int, DataTempo, DataTempo);
 bool verificar_quarto_vetor(VetorQuartos, int);
 Quarto pesquisar_quarto_vetor(VetorQuartos, int);
 void remover_quarto_vetor(VetorQuartos *, int);
+bool validar_endereco(const char *endereco);
+bool validar_telefone(const char *telefone);
 
 // Programa principal
 int main(){
@@ -110,12 +112,12 @@ int main(){
         dados_quartos = fopen("dados_quartos.txt", "wb+");
 
     do{
-        system("clear");
+        system("cls");
         menu();
         printf("\nSelecione a opcao\n");
         opcao = getchar();
         fflush(stdin);
-        system("clear");
+        system("cls");
         switch (opcao - '0'){
         case 0:
             fclose(dados_clientes);
@@ -178,14 +180,22 @@ void menu(){
 void cadastrar_cliente(){
     Cliente cliente;
     printf("Cadastro de cliente\n\n");
+
     printf("Nome: ");
     gets(cliente.nome);
-    if (verificar_cliente_existente(cliente.nome))
+    if (verificar_cliente_existente(cliente.nome)){
         return aviso("Ja existe um cliente com esse nome.");
+    }
     printf("Endereco: ");
     gets(cliente.endereco);
+    if (!validar_endereco(cliente.endereco)){
+        return aviso("Endereco invalido. Deve conter letras e numeros.");
+    }
     printf("Telefone: ");
     gets(cliente.telefone);
+    if (!validar_telefone(cliente.telefone)){
+       return aviso("Telefone invalido. Deve conter exatamente 11 digitos.");
+    }
     fseek(dados_clientes, 0, SEEK_END);
     cliente.codigo = ftell(dados_clientes) / sizeof(Cliente) + 1;
     fwrite(&cliente, sizeof(Cliente), 1, dados_clientes);
@@ -197,6 +207,7 @@ void cadastrar_cliente(){
 void cadastrar_funcionario(){
     Funcionario funcionario;
     printf("Cadastro de funcionario\n\n");
+    
     printf("Nome: ");
     gets(funcionario.nome);
     if (verificar_funcionario_existente(funcionario.nome))
@@ -565,6 +576,7 @@ VetorQuartos buscar_quartos_disponiveis(int hospedes, DataTempo entrada, DataTem
     return quartos;
 }
 
+// Função para verificar se um quarto existe em um vetor
 bool verificar_quarto_vetor(VetorQuartos vetorQuartos, int numero){
     int i;
     for (i = 0; i < vetorQuartos.tamanho; ++i)
@@ -573,6 +585,7 @@ bool verificar_quarto_vetor(VetorQuartos vetorQuartos, int numero){
     return false;
 }
 
+// Função para pesquisar um quarto em um vetor
 Quarto pesquisar_quarto_vetor(VetorQuartos vetorQuartos, int numero){
     Quarto quarto;
     int i;
@@ -584,6 +597,7 @@ Quarto pesquisar_quarto_vetor(VetorQuartos vetorQuartos, int numero){
     return quarto;
 }
 
+// Função para remover um quarto de um vetor
 void remover_quarto_vetor(VetorQuartos *vetorQuartos, int numero){
     int i;
     bool achou;
@@ -600,4 +614,23 @@ void remover_quarto_vetor(VetorQuartos *vetorQuartos, int numero){
         --vetorQuartos->tamanho;
         realloc(vetorQuartos->vetor, vetorQuartos->tamanho * sizeof(Quarto));
     }
+}
+
+// Função para verificar se uma string contém pelo menos uma letra e um número
+bool validar_endereco(const char *endereco) {
+    int tem_letra = 0, tem_numero = 0;
+    for (int i = 0; endereco[i] != '\0'; i++) {
+        if (isalpha(endereco[i])) tem_letra = 1;
+        if (isdigit(endereco[i])) tem_numero = 1;
+    }
+    return tem_letra && tem_numero;
+}
+
+// Função para verificar se uma string contém exatamente 11 dígitos
+bool validar_telefone(const char *telefone) {
+    if (strlen(telefone) != 11) return 0;
+    for (int i = 0; telefone[i] != '\0'; i++) {
+        if (!isdigit(telefone[i])) return 0;
+    }
+    return 1;
 }
